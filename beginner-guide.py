@@ -1,7 +1,7 @@
 
 
 # Change this to True for full dataset and learning
-COMPLETE_RUN = False
+COMPLETE_RUN = True
 
 import numpy as np
 np.random.seed(1001)
@@ -106,7 +106,7 @@ train_curated = os.path.join(datadir,'train_curated')
 train.query("nframes > 2500000")
 abnormal_length = 2538889
 abnormal_fnames = train.loc[train.nframes == abnormal_length, 'fname'].values[0]
-ipd.Audio( train_curated +'\\' + abnormal_fnames)
+# ipd.Audio( train_curated +'\\' + abnormal_fnames)
 
 ### 2. Building a model using raw wave
 import librosa
@@ -124,7 +124,7 @@ class Config(object):
     def __init__(self,
                  sampling_rate=16000, audio_duration=2,
                  n_classes=len(category_group),
-                 use_mfcc=False, n_folds=1, learning_rate=0.0001,
+                 use_mfcc=False, n_folds=10, learning_rate=0.0001,
                  max_epochs=50, n_mfcc=20):
         self.sampling_rate = sampling_rate
         self.audio_duration = audio_duration
@@ -274,40 +274,41 @@ train["label_idx"] = train.labels.apply(lambda x: label_idx[x])
 # if not COMPLETE_RUN:
 #     train = train[:2000]
 #     test = test[:2000]
-train = train[:2000]
-test = test[:2000]
+# train = train[:2000]
+# test = test[:2000]
 
 
 
-config = Config(sampling_rate=16000, audio_duration=2, n_folds=10, learning_rate=0.001)
+config = Config(sampling_rate=16000, audio_duration=2, n_folds=4, learning_rate=0.001)
 # if not COMPLETE_RUN:
 #     config = Config(sampling_rate=100, audio_duration=1, n_folds=2, max_epochs=1)
 
-config = Config(sampling_rate=100, audio_duration=1, n_folds=2, max_epochs=1)
+# config = Config(sampling_rate=100, audio_duration=2, n_folds=10, max_epochs=10)
 
 PREDICTION_FOLDER = os.path.join(datadir,"predictions_1d_conv")
 if not os.path.exists(PREDICTION_FOLDER):
     os.mkdir(PREDICTION_FOLDER)
-if os.path.exists(os.path.join(datadir,'logs')):
-    shutil.rmtree(os.path.join(datadir,'logs'))
+logsdir = os.path.join(datadir,'logs')
+if os.path.exists(logsdir):
+    shutil.rmtree(logsdir)
 
 skf = StratifiedKFold(n_splits=config.n_folds)
 
 
-logsdir = os.path.join(datadir,'logs')
 for i, (train_split, val_split) in enumerate(skf.split(train.index, train.label_idx)):
     train_set = train.iloc[train_split]
     val_set = train.iloc[val_split]
-    checkpoint = ModelCheckpoint(os.path.join('D:\\datas\\SON\\freesound-audio-tagging-2019','best_%d.h5'%i), monitor='val_loss', verbose=1, save_best_only=True)
+    checkpoint = ModelCheckpoint(os.path.join(datadir,'best_%d.h5'%i), monitor='val_loss', verbose=1, save_best_only=True)
     early = EarlyStopping(monitor="val_loss", mode="min", patience=5)
-    tb = TensorBoard(log_dir=logsdir + '\\fold_%d'%i, write_graph=True)
+    # tb = TensorBoard(log_dir=logsdir + '\\fold_%d'%i, write_graph=True)
 
-    callbacks_list = [checkpoint, early, tb]
+    callbacks_list = [checkpoint, early]
     print("\nFold: ", i)
     if COMPLETE_RUN:
         model = get_1d_conv_model(config)
     else:
         model = get_1d_dummy_model(config)
+    model.summary()
 
     train_generator = DataGenerator(config, train_curated, train_set.index,
                                     train_set.label_idx, batch_size=64,

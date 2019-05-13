@@ -1,10 +1,12 @@
+import time
+debut = time.time()
+
 import keras
 import numpy as np
 import librosa
-
+import os
 model_path = 'D:\\datas\\SON\\freesound-audio-tagging-2019\\best_1.h5'
-# sound_path = 'D:\\datas\\SON\\freesound-audio-tagging-2019\\train_curated\\00c40a6d.wav'
-sound_path = 'D:\\datas\\SON\\OUAKAM_AVRIL_MAI_2018\\2018-04\\06115005.wav'
+folder_path = 'D:\\datas\\SON\\OUAKAM_AVRIL_MAI_2018\\2018-04'
 
 class Config(object):
     def __init__(self,
@@ -37,8 +39,12 @@ def audio_norm(data):
     return data -0.5
 
 def data_prep(config,path):
-    data,_ = librosa.core.load(path,sr=config.sampling_rate,
-                    res_type='kaiser_fast')
+    #TODO : check if files are OK
+    try :
+        data,_ = librosa.core.load(path,sr=config.sampling_rate,
+                        res_type='kaiser_fast')
+    except EOFError :
+        return 0
 
     print('len data : ', len(data))
     print('audio length : ', config.audio_length)
@@ -67,12 +73,26 @@ def data_prep(config,path):
 
     return data
 
-data = np.expand_dims(data_prep(config,sound_path),axis=1)
-print('shape : ', data.shape)
-data=data.reshape((1,32000,1))
-print('shape : ', data.shape)
 
 model = keras.models.load_model(model_path)
 model.summary()
-res =model.predict(data)
-print (res)
+
+for root, dir, files in os.walk(folder_path):
+    for file in files :
+        sound_path = os.path.join(folder_path,file)
+        if file[0]=='.':
+            continue
+        if not (file[-4:]=='.wav'):
+            print('pass file')
+            continue
+        print(sound_path)
+        # print(file)
+        data = np.expand_dims(data_prep(config,sound_path),axis=1)
+        if data.all() ==0:
+            continue
+        data=data.reshape((1,32000,1))
+        res =model.predict(data)
+# print (res)
+
+fin = time.time()
+print('Temps ecoule en secondes : ',fin - debut )

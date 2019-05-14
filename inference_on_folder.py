@@ -5,8 +5,8 @@ import keras
 import numpy as np
 import librosa
 import os
-model_path = 'D:\\datas\\SON\\freesound-audio-tagging-2019\\best_1.h5'
-folder_path = 'D:\\datas\\SON\\OUAKAM_AVRIL_MAI_2018\\2018-04'
+model_path = 'D:\\datas\\SON\\OUAKAM_AVRIL_MAI_2018\\2018-05\\best_1.h5'
+folder_path = 'D:\\datas\\SON\\OUAKAM_AVRIL_MAI_2018\\2018-05'
 
 class Config(object):
     def __init__(self,

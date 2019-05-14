@@ -2,7 +2,9 @@ import keras
 import numpy as np
 import librosa
 
-model_path = 'D:\\datas\\SON\\freesound-audio-tagging-2019\\best_1.h5'
+# model_path = 'D:\\datas\\SON\\freesound-audio-tagging-2019\\best_1.h5'
+model_path = 'D:\\datas\\SON\\OUAKAM_AVRIL_MAI_2018\\2018-05\\best_1.h5'
+
 # sound_path = 'D:\\datas\\SON\\freesound-audio-tagging-2019\\train_curated\\00c40a6d.wav'
 sound_path = 'D:\\datas\\SON\\OUAKAM_AVRIL_MAI_2018\\2018-04\\06115005.wav'
 

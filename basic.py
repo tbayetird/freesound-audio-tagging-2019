@@ -244,29 +244,16 @@ for i, (train_split, val_split) in enumerate(skf.split(train.index, train.label_
     history = model.fit_generator(train_generator, callbacks=callbacks_list, validation_data=val_generator,
                                   epochs=config.max_epochs, max_queue_size=20)
 
-# Save train predictions
-    train_generator = DataGenerator(config, datadir, train.index, batch_size=128,
-                                    preprocessing_fn=audio_norm)
-    predictions = model.predict_generator(train_generator,
-                                          max_queue_size=20, verbose=1)
-    np.save(PREDICTION_FOLDER + "\\train_predictions_%d.npy"%i, predictions)
-
-    # Make a submission file
-    top_3 = np.array(LABELS)[np.argsort(-predictions, axis=1)[:, :3]]
-    predicted_labels = [' '.join(list(x)) for x in top_3]
-    test['label'] = predicted_labels
-    test[['label']].to_csv(PREDICTION_FOLDER + "/predictions_%d.csv"%i)
-
-pred_list = []
-for i in range(config.n_folds):
-    pred_list.append(np.load(datadir +"\\predictions_1d_conv\\test_predictions_%d.npy"%i))
-prediction = np.ones_like(pred_list[0])
-for pred in pred_list:
-    prediction = prediction*pred
-prediction = prediction**(1./len(pred_list))
-# Make a submission file
-top_3 = np.array(LABELS)[np.argsort(-prediction, axis=1)[:, :3]]
-predicted_labels = [' '.join(list(x)) for x in top_3]
-test = pd.read_csv(datadir +'\\sample_submission.csv')
-test['label'] = predicted_labels
-test[['fname', 'label']].to_csv(datadir + "1d_conv_ensembled_submission.csv", index=False)
+# pred_list = []
+# for i in range(config.n_folds):
+#     pred_list.append(np.load(datadir +"\\predictions_1d_conv\\test_predictions_%d.npy"%i))
+# prediction = np.ones_like(pred_list[0])
+# for pred in pred_list:
+#     prediction = prediction*pred
+# prediction = prediction**(1./len(pred_list))
+# # Make a submission file
+# top_3 = np.array(LABELS)[np.argsort(-prediction, axis=1)[:, :3]]
+# predicted_labels = [' '.join(list(x)) for x in top_3]
+# test = pd.read_csv(datadir +'\\sample_submission.csv')
+# test['label'] = predicted_labels
+# test[['fname', 'label']].to_csv(datadir + "1d_conv_ensembled_submission.csv", index=False)
